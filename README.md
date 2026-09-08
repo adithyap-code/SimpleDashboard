@@ -1,0 +1,2 @@
+# SimpleDashboard
+Basic Market Tracker
