@@ -3,11 +3,6 @@ import streamlit as st
 import plotly.graph_objects as go
 import textwrap
 
-
-# ============================================================
-# CONFIGURATION
-# ============================================================
-
 TICKERS = {
     "Nifty 50": "^NSEI",
     "Nifty Midcap 150": "NIFTYMIDCAP150.NS",
@@ -18,18 +13,7 @@ TICKERS = {
     "Soxx Index": "^SOX",
 }
 
-
-# ============================================================
-# DATA FUNCTIONS
-# ============================================================
-
 def get_intraday_data(ticker):
-    """
-    Get the latest available intraday data.
-
-    Yahoo generally provides 1-minute data for recent periods.
-    We use the most recent observation as the current value.
-    """
 
     df = yf.download(
         ticker,
@@ -49,12 +33,6 @@ def get_intraday_data(ticker):
 
 
 def get_daily_data(ticker):
-    """
-    Get daily closing prices.
-
-    Used for calculating previous close, 5D return,
-    and the historical sparkline.
-    """
 
     df = yf.download(
         ticker,
@@ -74,24 +52,14 @@ def get_daily_data(ticker):
 
 
 def get_market_data():
-    """
-    Fetch current and historical information for all instruments.
-    """
 
     results = {}
 
     for name, ticker in TICKERS.items():
 
         try:
-            # ------------------------------------------------
-            # 1. Intraday data
-            # ------------------------------------------------
 
             intraday = get_intraday_data(ticker)
-
-            # ------------------------------------------------
-            # 2. Daily data
-            # ------------------------------------------------
 
             daily = get_daily_data(ticker)
 
@@ -99,39 +67,23 @@ def get_market_data():
                 print(f"WARNING: No daily data for {name}")
                 continue
 
-            # ------------------------------------------------
-            # Current price
-            # ------------------------------------------------
-
             if intraday is not None and not intraday.empty:
                 current = float(intraday["Close"].iloc[-1])
                 current_time = intraday.index[-1]
             else:
-                # Fall back to latest daily close
                 current = float(daily["Close"].iloc[-1])
                 current_time = daily.index[-1]
-
-            # ------------------------------------------------
-            # Previous trading day close
-            # ------------------------------------------------
 
             if len(daily) >= 2:
                 previous_close = float(daily["Close"].iloc[-2])
             else:
                 previous_close = None
 
-            # ------------------------------------------------
-            # 5 trading day return
-            # ------------------------------------------------
-
             if len(daily) >= 6:
                 five_day_close = float(daily["Close"].iloc[-6])
             else:
                 five_day_close = None
 
-            # ------------------------------------------------
-            # Calculate changes
-            # ------------------------------------------------
 
             if previous_close is not None:
                 change_1d = (
@@ -146,10 +98,6 @@ def get_market_data():
                 ) * 100
             else:
                 change_5d = None
-
-            # ------------------------------------------------
-            # Store everything
-            # ------------------------------------------------
 
             results[name] = {
                 "ticker": ticker,
@@ -179,10 +127,6 @@ def get_market_data():
     return results
 
 
-# ============================================================
-# STREAMLIT DASHBOARD
-# ============================================================
-
 def format_value(name, value):
 
     if value is None:
@@ -199,10 +143,6 @@ def display_market_card(name, data):
     current = data["current"]
     change_1d = data["change_1d"]
     change_5d = data["change_5d"]
-
-    # --------------------------------------------------------
-    # Background
-    # --------------------------------------------------------
 
     if change_1d > 0:
         border_color = "#2E8B57"
@@ -226,10 +166,6 @@ def display_market_card(name, data):
     else:
         change_text = "N/A"
 
-    # --------------------------------------------------------
-    # 5D normalized history
-    # --------------------------------------------------------
-
     history = data["daily_history"].tail(5)
 
     normalized = (
@@ -237,10 +173,6 @@ def display_market_card(name, data):
         if len(history) > 1
         else history
     )
-
-    # --------------------------------------------------------
-    # Create sparkline
-    # --------------------------------------------------------
 
     fig = go.Figure()
 
@@ -268,10 +200,6 @@ def display_market_card(name, data):
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
     )
-
-    # --------------------------------------------------------
-    # Card layout
-    # --------------------------------------------------------
 
     st.html(
         f"""
@@ -332,15 +260,11 @@ def display_market_card(name, data):
         }
     )
 
-# ============================================================
-# MAIN STREAMLIT APP
-# ============================================================
-
 def main():
 
     st.set_page_config(
         page_title="Market Monitor",
-        page_icon="📈",
+        page_icon="📈", #is this the right emoji? Maybe change later
         layout="wide",
     )
 
@@ -369,9 +293,6 @@ def main():
         with st.spinner("Fetching latest market data..."):
             st.session_state["market_data"] = get_market_data()
 
-    # --------------------------------------------------------
-    # If no data has been loaded yet
-    # --------------------------------------------------------
 
     if "market_data" not in st.session_state:
 
@@ -382,10 +303,6 @@ def main():
         return
 
     market_data = st.session_state["market_data"]
-
-    # --------------------------------------------------------
-    # Display cards
-    # --------------------------------------------------------
 
     names = list(TICKERS.keys())
 
@@ -407,11 +324,6 @@ def main():
                     name,
                     market_data[name]
                 )
-
-
-# ============================================================
-# RUN
-# ============================================================
 
 if __name__ == "__main__":
 
