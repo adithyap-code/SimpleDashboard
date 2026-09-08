@@ -14,6 +14,8 @@ TICKERS = {
     "Nifty Smallcap 250": "NIFTYSMLCAP250.NS",
     "Brent Crude": "BZ=F",
     "S&P 500": "^GSPC",
+    "Nasdaq 100": "^NDX",
+    "Soxx Index": "^SOX",
 }
 
 
@@ -387,43 +389,24 @@ def main():
 
     names = list(TICKERS.keys())
 
-    row1 = st.columns(2)
+    for i in range(0, len(names), 2):
 
-    with row1[0]:
-        display_market_card(
-            names[0],
-            market_data[names[0]]
-        )
+        row = st.columns(2)
 
-    with row1[1]:
-        display_market_card(
-            names[1],
-            market_data[names[1]]
-        )
+        with row[0]:
+            name = names[i]
+            display_market_card(
+                name,
+                market_data[name]
+            )
 
-
-    row2 = st.columns(2)
-
-    with row2[0]:
-        display_market_card(
-            names[2],
-            market_data[names[2]]
-        )
-
-    with row2[1]:
-        display_market_card(
-            names[3],
-            market_data[names[3]]
-        )
-
-
-    row3 = st.columns(2)
-
-    with row3[0]:
-        display_market_card(
-            names[4],
-            market_data[names[4]]
-        )
+        if i + 1 < len(names):
+            with row[1]:
+                name = names[i + 1]
+                display_market_card(
+                    name,
+                    market_data[name]
+                )
 
 
 # ============================================================
